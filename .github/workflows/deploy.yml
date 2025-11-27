@@ -1,0 +1,20 @@
+name: Run Ansible on VM
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ansible:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible python3-pip
+
+      - name: Run Ansible playbook
+        run: ansible-playbook -i inventory/hosts.ini playbook.yml
