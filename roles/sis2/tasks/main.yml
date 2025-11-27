@@ -1,0 +1,57 @@
+---
+- name: Create groups
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - frontend
+    - backend
+    - devops
+
+- name: Create users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    group: "{{ item.group }}"
+    create_home: yes
+    shell: /bin/bash
+  loop:
+    - { name: 'frontend_user', group: 'frontend' }
+    - { name: 'backend_user', group: 'backend' }
+    - { name: 'devops_user', group: 'devops' }
+    - { name: 'automation_bot', group: 'devops' }
+
+- name: Ensure SSH directory exists
+  file:
+    path: /home/automation_bot/.ssh
+    state: directory
+    owner: automation_bot
+    group: devops
+    mode: '0700'
+
+- name: Generate SSH key for automation_bot
+  community.crypto.openssh_keypair:
+    path: /home/automation_bot/.ssh/id_rsa
+    owner: automation_bot
+    group: devops
+    mode: '0600'
+    type: rsa
+    size: 4096
+
+- name: Add public key to authorized_keys
+  copy:
+    src: /home/automation_bot/.ssh/id_rsa.pub
+    dest: /home/automation_bot/.ssh/authorized_keys
+    remote_src: yes
+    owner: automation_bot
+    group: devops
+    mode: '0600'
+
+- name: Configure sudoers for project roles
+  copy:
+    dest: /etc/sudoers.d/project_roles
+    owner: root
+    mode: '0440'
+    content: |
+      %frontend ALL=(ALL) /bin/ls, /bin/cat
+      %backend  ALL=(ALL) /usr/bin/nano, /usr/bin/vim
+      %devops   ALL=(ALL) ALL

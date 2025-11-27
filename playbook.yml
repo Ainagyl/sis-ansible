@@ -1,0 +1,5 @@
+- hosts: all
+  become: true
+  roles:
+    - sis2
+    - sis3

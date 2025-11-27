@@ -1,0 +1,11 @@
+---
+- name: reload-systemd
+  systemd:
+    daemon_reload: yes
+
+- name: restart-airbooking
+  systemd:
+    name: airbooking
+    state: restarted
+    enabled: yes
+
